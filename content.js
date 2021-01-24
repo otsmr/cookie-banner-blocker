@@ -239,20 +239,31 @@ function removeElementFromCache (elementToRemove) {
             }
         }
 
+        if (element) console.log(element);
+
     }
 
     if (!element) {
         if (startUp > +new Date() - 1000 * 60) {
             setTimeout(() => {
                 removeElementFromCache (elementToRemove);
-            }, 100);
+            }, 50);
         } else {
             console.info("[inline-popup-blocker] NOT FOUND cachedItem ", selector);
         }
     } else {
         removeScrollBlocker();
         element.remove()
+
+        // There is the strange effect that an element
+        // was not removed, therefore here the interval.
+        let int = setInterval(()=> {
+            if (element.getClientRects().length === 0) clearInterval(int);
+            else element.remove()
+        }, 10)
+        
         console.info("[inline-popup-blocker] REMOVE cachedItem ", element);
+        
     }
 
 }
