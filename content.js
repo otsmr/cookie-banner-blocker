@@ -6,8 +6,23 @@ let checkAfterModification = null;
 // TODO: create config page
 let configs = {
     removeRadicalAllPopus: true,
-    cookieHtmlKeywords: [ "cookie" ]
+    cookieHtmlKeywords: [ "cookie" ],
+    verbose: true
 };
+
+
+let realConsole = console;
+
+function log (type, ...msg) {
+    if (configs.verbose)
+        realConsole[type](...msg);
+}
+
+console = {
+    ...console,
+    info: (...msg) => log("info", ...msg),
+    error: (...msg) => log("error", ...msg)
+}
 
 
 // -- Popups --
@@ -239,8 +254,6 @@ function removeElementFromCache (elementToRemove) {
             }
         }
 
-        if (element) console.log(element);
-
     }
 
     if (!element) {
@@ -263,7 +276,7 @@ function removeElementFromCache (elementToRemove) {
         }, 10)
         
         console.info("[inline-popup-blocker] REMOVE cachedItem ", element);
-        
+
     }
 
 }
