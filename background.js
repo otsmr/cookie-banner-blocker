@@ -33,6 +33,11 @@ browser.runtime.onMessage.addListener((msg, sender) => {
             showBlockedIcon(tabId);
             break;
 
+        case "blocked-by-cache":
+            //TODO: custom icon for blocked-by-cache
+            showBlockedIcon(tabId);
+            break;
+
         case "blocked-cookie-banner":
             showBlockedIcon(tabId);
             break;
@@ -46,13 +51,17 @@ browser.runtime.onMessage.addListener((msg, sender) => {
 
 browser.pageAction.onClicked.addListener(async (tab) => {
 
-	const hostname = tab.url.match(hostnameRegex)[1];
+    const hostname = tab.url.match(hostnameRegex)[1];
+    const cacheName = hostname + "-cache";
+
 	const existing = await browser.storage.sync.get(hostname);
+    
 	if (existing[hostname] == "i") {
 		// remove from blocklist
 		await browser.storage.sync.remove(hostname);
 	} else {
-		// add to blocklist
+        // add to blocklist
+        await browser.storage.sync.remove(cacheName);
 		await browser.storage.sync.set({ [hostname]: "i" });
 	}
     await browser.tabs.reload(tab.id);

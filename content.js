@@ -42,7 +42,10 @@ function findAndRemovePopups() {
 
     if (removeFixedElements.length > 0) {
         console.info("[inline-popup-blocker] REMOVE removeFixedElements: ", removeFixedElements);
-        removeFixedElements.forEach(removeFixedElement => removeFixedElement.remove());
+        removeFixedElements.forEach(removeFixedElement => {
+            addToCache(removeFixedElement);
+            removeFixedElement.remove();
+        });
         removed = removeFixedElements.length;
     }
 
@@ -51,7 +54,10 @@ function findAndRemovePopups() {
         let popupElements = findElementByCssRule('zIndex', parseInt(zIndex), (a, b) => a > b);
 
         console.info("[inline-popup-blocker] REMOVE popupElements: ", popupElements);
-        popupElements.forEach(popupElement => popupElement.remove());
+        popupElements.forEach(popupElement => {
+            addToCache(popupElement);
+            popupElement.remove();
+        });
 
         removed += popupElements.length;
 
@@ -85,6 +91,7 @@ function removeCookieBanner () {
             try {
                 if (fixedElement.innerHTML.toLowerCase().indexOf(cookieHtmlKeyword) > 1) {
                     if ( window.getComputedStyle(fixedElement).display !== "none") {
+                        addToCache(fixedElement);
                         fixedElement.remove();
                         console.info("[inline-popup-blocker] REMOVE fixedElement (keyword = " + cookieHtmlKeyword + "): ", fixedElement);
                         blocked = true;
@@ -138,7 +145,6 @@ function startPopUpCleaner () {
 
     if (!blockedCookieBanner) {
         if (blockedCookieBanner = removeCookieBanner()) {
-            console.log("blockedCookieBanner");
             browser.runtime.sendMessage('blocked-cookie-banner');
         }
     }
@@ -151,11 +157,11 @@ function startPopUpCleaner () {
     }
 
     if (removed = findAndRemovePopups() > 0) {
-        console.log("findAndRemovePopups");
         browser.runtime.sendMessage('blocked-inline-popup');
     }
 
 }
+
 
 function createObserver() {
 
@@ -172,21 +178,25 @@ function createObserver() {
 
 }
 
-
 try {
 
     // run initially (after dom content loaded)
 
     const hostname = window.location.hostname;
 
-    browser.storage.sync.get(hostname).then(res => {
+    browser.storage.sync.get(hostname).then(async (res) => {
 
         if (res[hostname] == 'i') {
             return browser.runtime.sendMessage('ignored');
         }
-    
-        startPopUpCleaner();
-        createObserver();
+
+        if (!await restoredFromCache()) {
+            startPopUpCleaner();
+            createObserver();
+        } else {
+            browser.runtime.sendMessage('blocked-by-cache');
+        }
+
 
     });
     
@@ -196,12 +206,96 @@ try {
 }
 
 
+//  ---------- Cache Functions ----------
+// Cache found popups so that they can be removed
+// faster at the next startup.
+// Also, with large sites (youtube.com) there is
+// still performance problem when detecting popups
+
+const cacheName = location.host + "-cache";
+
+let elementsToRemove = [];
+
+function removeElementFromCache (elementToRemove) {
+
+    let selector = `${elementToRemove.tagName}`;
+
+    if (elementToRemove.id !== "")
+        selector += "#" + elementToRemove.id;
+
+    if (elementToRemove.className !== "")
+        selector += "." + elementToRemove.className.split(" ").join(".");
+
+    let element = document.querySelector(selector);
+
+    if (!element) {
+
+        elements = [...document.getElementsByTagName("*")];
+        shadowElements = elements.filter(e => e.shadowRoot).map(e => e.shadowRoot);
+
+        for (shadowElement of shadowElements) {
+            if (element = shadowElement.querySelector(selector)) {
+                break;
+            }
+        }
+
+    }
+
+    if (!element) {
+        if (startUp > +new Date() - 1000 * 60) {
+            setTimeout(() => {
+                removeElementFromCache (elementToRemove);
+            }, 100);
+        } else {
+            console.info("[inline-popup-blocker] NOT FOUND cachedItem ", selector);
+        }
+    } else {
+        removeScrollBlocker();
+        element.remove()
+        console.info("[inline-popup-blocker] REMOVE cachedItem ", element);
+    }
+
+}
+
+async function restoredFromCache () {
+
+    const cachedForHostname = await browser.storage.sync.get(cacheName);
+    let cache = cachedForHostname[cacheName];
+
+    if (
+        cache === undefined ||
+        cache.elementsToRemove === undefined ||
+        cache.elementsToRemove.length === 0
+    ) {
+        return false;
+    }
+
+    cache.elementsToRemove.forEach(removeElementFromCache)
+
+    return true;
+
+}
+
+async function addToCache (element) {
+
+    let cachedForHostname = await browser.storage.sync.get(cacheName);
+    
+    elementsToRemove.push({
+        tagName: element.tagName,
+        className: element.className,
+        id: element.id,
+        date: +new Date()
+    });
+    
+    await browser.storage.sync.set({ [cacheName]:  {
+        ...cachedForHostname[cacheName],
+        elementsToRemove
+    }});
+
+}
 
 
-
-
-//  ---------- Some Helpers ----------
-
+//  ---------- Some Helper Functions ----------
 
 function findElementByCssRule (name, value, check = (a, b) => a === b, element = document.body) {
 
