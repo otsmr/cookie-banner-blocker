@@ -2,7 +2,7 @@
   "description": "Simple Cookie Banner & Inline Popup Blocker",
   "manifest_version": 2,
   "name": "Inline Popup Blocker",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "homepage_url": "https://github.com/otsmr/inline-popup-blocker",
   "icons": {
     "48": "icons/cookie-bite-solid.svg",
@@ -19,7 +19,7 @@
       "matches": [
         "<all_urls>"
       ],
-      "run_at": "document_start",
+      "run_at": "document_end",
       "js": [
         "content.js"
       ]

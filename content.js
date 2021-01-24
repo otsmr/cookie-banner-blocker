@@ -203,6 +203,7 @@ try {
         }
 
         if (!await restoredFromCache()) {
+            logger.info("[inline-popup-blocker] startPopUpCleaner");
             startPopUpCleaner();
             createObserver();
         } else {
@@ -210,7 +211,7 @@ try {
         }
 
 
-    });
+    }).catch(logger.error);
     
 
 } catch (error) {
@@ -273,16 +274,17 @@ function removeElementFromCache (elementToRemove) {
         }, 10)
         
         logger.info("[inline-popup-blocker] REMOVE cachedItem ", element);
-
+        
     }
 
 }
 
 async function restoredFromCache () {
 
+    
     const cachedForHostname = await browser.storage.sync.get(cacheName);
     let cache = cachedForHostname[cacheName];
-
+    
     if (
         cache === undefined ||
         cache.elementsToRemove === undefined ||
@@ -290,8 +292,9 @@ async function restoredFromCache () {
     ) {
         return false;
     }
-
-    cache.elementsToRemove.forEach(removeElementFromCache)
+        
+    logger.info("[inline-popup-blocker] restoredFromCache");
+    cache.elementsToRemove.forEach(elementToRemove => new Promise((r, rj) => removeElementFromCache(elementToRemove)))
 
     return true;
 
