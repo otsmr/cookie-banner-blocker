@@ -11,15 +11,12 @@ let configs = {
 };
 
 
-let realConsole = console;
-
 function log (type, ...msg) {
     if (configs.verbose)
-        realConsole[type](...msg);
+    console[type](...msg);
 }
 
-console = {
-    ...console,
+const logger = {
     info: (...msg) => log("info", ...msg),
     error: (...msg) => log("error", ...msg)
 }
@@ -56,7 +53,7 @@ function findAndRemovePopups() {
     }
 
     if (removeFixedElements.length > 0) {
-        console.info("[inline-popup-blocker] REMOVE removeFixedElements: ", removeFixedElements);
+        logger.info("[inline-popup-blocker] REMOVE removeFixedElements: ", removeFixedElements);
         removeFixedElements.forEach(removeFixedElement => {
             addToCache(removeFixedElement);
             removeFixedElement.remove();
@@ -68,7 +65,7 @@ function findAndRemovePopups() {
 
         let popupElements = findElementByCssRule('zIndex', parseInt(zIndex), (a, b) => a > b);
 
-        console.info("[inline-popup-blocker] REMOVE popupElements: ", popupElements);
+        logger.info("[inline-popup-blocker] REMOVE popupElements: ", popupElements);
         popupElements.forEach(popupElement => {
             addToCache(popupElement);
             popupElement.remove();
@@ -108,7 +105,7 @@ function removeCookieBanner () {
                     if ( window.getComputedStyle(fixedElement).display !== "none") {
                         addToCache(fixedElement);
                         fixedElement.remove();
-                        console.info("[inline-popup-blocker] REMOVE fixedElement (keyword = " + cookieHtmlKeyword + "): ", fixedElement);
+                        logger.info("[inline-popup-blocker] REMOVE fixedElement (keyword = " + cookieHtmlKeyword + "): ", fixedElement);
                         blocked = true;
                     }
                 }
@@ -217,7 +214,7 @@ try {
     
 
 } catch (error) {
-    console.error("[inline-popup-blocker] ERROR:", error);
+    logger.error("[inline-popup-blocker] ERROR:", error);
 }
 
 
@@ -262,7 +259,7 @@ function removeElementFromCache (elementToRemove) {
                 removeElementFromCache (elementToRemove);
             }, 50);
         } else {
-            console.info("[inline-popup-blocker] NOT FOUND cachedItem ", selector);
+            logger.info("[inline-popup-blocker] NOT FOUND cachedItem ", selector);
         }
     } else {
         removeScrollBlocker();
@@ -275,7 +272,7 @@ function removeElementFromCache (elementToRemove) {
             else element.remove()
         }, 10)
         
-        console.info("[inline-popup-blocker] REMOVE cachedItem ", element);
+        logger.info("[inline-popup-blocker] REMOVE cachedItem ", element);
 
     }
 
