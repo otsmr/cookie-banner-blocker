@@ -1,4 +1,4 @@
-# Simple Cookie Banner & Inline Popup Blocker
+# [Inline Popup Blocker](https://addons.mozilla.org/de/firefox/addon/inline-popup-blocker/)
 
 A simple blocker that removes most inline and cookie banners **without a blocklist**.
 
