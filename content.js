@@ -54,10 +54,7 @@ function findAndRemovePopups() {
 
     if (removeFixedElements.length > 0) {
         logger.info("[inline-popup-blocker] REMOVE removeFixedElements: ", removeFixedElements);
-        removeFixedElements.forEach(removeFixedElement => {
-            addToCache(removeFixedElement);
-            removeFixedElement.remove();
-        });
+        removeFixedElements.forEach(hideElementWithCSS);
         removed = removeFixedElements.length;
     }
 
@@ -66,10 +63,8 @@ function findAndRemovePopups() {
         let popupElements = findElementByCssRule('zIndex', parseInt(zIndex), (a, b) => a > b);
 
         logger.info("[inline-popup-blocker] REMOVE popupElements: ", popupElements);
-        popupElements.forEach(popupElement => {
-            addToCache(popupElement);
-            popupElement.remove();
-        });
+
+        popupElements.forEach(hideElementWithCSS);
 
         removed += popupElements.length;
 
@@ -103,10 +98,11 @@ function removeCookieBanner () {
             try {
                 if (fixedElement.innerHTML.toLowerCase().indexOf(cookieHtmlKeyword) > 1) {
                     if ( window.getComputedStyle(fixedElement).display !== "none") {
-                        addToCache(fixedElement);
-                        fixedElement.remove();
-                        logger.info("[inline-popup-blocker] REMOVE fixedElement (keyword = " + cookieHtmlKeyword + "): ", fixedElement);
+
+                        logger.info("[inline-popup-blocker] HIDE fixedElement (keyword = " + cookieHtmlKeyword + "): ", fixedElement);   
+                        hideElementWithCSS(fixedElement);
                         blocked = true;
+
                     }
                 }
             } catch (error) {}
@@ -137,7 +133,7 @@ function removeScrollBlocker () {
         addStyleRules(`
 html { overflow: auto !important; }    
 body { overflow: auto !important; }    
-`);
+`, false);
 
     }
 
@@ -168,6 +164,8 @@ function startPopUpCleaner () {
         return;
     }
 
+    console.log("SEARCH");
+
     if (removed = findAndRemovePopups() > 0) {
         browser.runtime.sendMessage('blocked-inline-popup');
     }
@@ -194,18 +192,40 @@ try {
 
     // run initially (after dom content loaded)
 
+    let domContentLoaded = false;
+    let waitForDomIntervall = null;
+
+    window.addEventListener('DOMContentLoaded', (event) => {
+        console.log('DOM fully loaded and parsed');
+        removeScrollBlocker();
+        domContentLoaded = true;
+    });
+    
     const hostname = window.location.hostname;
-
+    
     browser.storage.sync.get(hostname).then(async (res) => {
-
+        
         if (res[hostname] == 'i') {
             return browser.runtime.sendMessage('ignored');
         }
-
+        
         if (!await restoredFromCache()) {
             logger.info("[inline-popup-blocker] startPopUpCleaner");
-            startPopUpCleaner();
-            createObserver();
+            
+
+            function start () {
+                if (waitForDomIntervall) clearInterval(waitForDomIntervall);
+                if (!domContentLoaded) return;
+                
+                // Perform this function only once
+                domContentLoaded = false;
+
+                startPopUpCleaner();
+                createObserver();
+            }
+            start();
+            waitForDomIntervall = setInterval(start, 10);
+
         } else {
             browser.runtime.sendMessage('blocked-by-cache');
         }
@@ -228,98 +248,74 @@ try {
 const cacheName = location.host + "-cache";
 
 let elementsToRemove = [];
-
-function removeElementFromCache (elementToRemove) {
-
-    let selector = `${elementToRemove.tagName}`;
-
-    if (elementToRemove.id !== "")
-        selector += "#" + elementToRemove.id;
-
-    if (elementToRemove.className !== "")
-        selector += "." + elementToRemove.className.split(" ").join(".");
-
-    let element = document.querySelector(selector);
-
-    if (!element) {
-
-        elements = [...document.getElementsByTagName("*")];
-        shadowElements = elements.filter(e => e.shadowRoot).map(e => e.shadowRoot);
-
-        for (shadowElement of shadowElements) {
-            if (element = shadowElement.querySelector(selector)) {
-                break;
-            }
-        }
-
-    }
-
-    if (!element) {
-        if (startUp > +new Date() - 1000 * 60) {
-            setTimeout(() => {
-                removeElementFromCache (elementToRemove);
-            }, 50);
-        } else {
-            logger.info("[inline-popup-blocker] NOT FOUND cachedItem ", selector);
-        }
-    } else {
-        removeScrollBlocker();
-        element.remove()
-
-        // There is the strange effect that an element
-        // was not removed, therefore here the interval.
-        let int = setInterval(()=> {
-            if (element.getClientRects().length === 0) clearInterval(int);
-            else element.remove()
-        }, 10)
-        
-        logger.info("[inline-popup-blocker] REMOVE cachedItem ", element);
-        
-    }
-
-}
+let cssRulesCache = "";
 
 async function restoredFromCache () {
 
+    // -> background
+    // https://github.com/mdn/webextensions-examples/blob/master/apply-css/background.js
     
     const cachedForHostname = await browser.storage.sync.get(cacheName);
     let cache = cachedForHostname[cacheName];
     
     if (
         cache === undefined ||
-        cache.elementsToRemove === undefined ||
-        cache.elementsToRemove.length === 0
+        cache.cssRulesCache === undefined ||
+        cache.cssRulesCache === "" 
     ) {
         return false;
     }
         
     logger.info("[inline-popup-blocker] restoredFromCache");
-    cache.elementsToRemove.forEach(elementToRemove => new Promise((r, rj) => removeElementFromCache(elementToRemove)))
+
+    // addStyleRules(cache.cssRulesCache, false);
 
     return true;
 
 }
 
-async function addToCache (element) {
+function cacheCssRules () {
 
-    let cachedForHostname = await browser.storage.sync.get(cacheName);
-    
-    elementsToRemove.push({
-        tagName: element.tagName,
-        className: element.className,
-        id: element.id,
-        date: +new Date()
-    });
-    
-    await browser.storage.sync.set({ [cacheName]:  {
-        ...cachedForHostname[cacheName],
-        elementsToRemove
-    }});
+    const hostname = window.location.hostname;
+
+    browser.storage.sync.get(hostname).then(async (cachedForHostname) => {
+
+        browser.storage.sync.set({ [cacheName]:  {
+            ...cachedForHostname[cacheName],
+            cssRulesCache
+        }});
+
+    })
 
 }
 
 
 //  ---------- Some Helper Functions ----------
+
+function getSelectorByIdentifier (elementToRemove) {
+
+    let selector = `${elementToRemove.tagName}`;
+    
+    if (elementToRemove.id !== "")
+        selector += "#" + elementToRemove.id;
+    
+    if (elementToRemove.className !== "")
+        selector += "." + elementToRemove.className.split(" ").join(".");
+
+    return selector;
+    
+}
+
+function getIdentifierForElement (element) {
+
+    return {
+        tagName: element.tagName,
+        className: element.className,
+        id: element.id,
+        date: +new Date()
+    }
+
+}
 
 function findElementByCssRule (name, value, check = (a, b) => a === b, element = document.body) {
 
@@ -355,8 +351,33 @@ function hasSameSizeAsWindow (rect, radius = 100) {
 function isFixed(node) {
     return window.getComputedStyle(node).position === 'fixed'
 }
-function addStyleRules (rules) {
-    let style = document.createElement("style")
-    style.innerHTML = rules;
-    document.head.append(style);
+
+function hideElementWithCSS (element) {
+
+    if (element.getRootNode().host) {
+        element = element.getRootNode().host;
+    }
+
+    let selector = getSelectorByIdentifier(getIdentifierForElement(element));
+    addStyleRules(`${selector} { display: none !important; }`);
+
+}
+
+function addStyleRules (rules, addToCache = true) {
+
+    if (addToCache) {
+        cssRulesCache += rules;
+        cacheCssRules();
+    }
+
+    logger.info("[inline-popup-blocker] ADD customCSSRules ", rules.split("\n").join(" "));
+
+    try {
+        let style = document.createElement("style")
+        style.innerHTML = rules;
+        document.head.append(style);
+    } catch (error) {
+        console.log(error);
+    }
+
 }

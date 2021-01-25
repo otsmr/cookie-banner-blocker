@@ -67,3 +67,47 @@ browser.pageAction.onClicked.addListener(async (tab) => {
     await browser.tabs.reload(tab.id);
     
 });
+
+async function initializePageAction (targetTabId) {
+
+    try {
+
+        const tab = await browser.tabs.get(targetTabId);
+
+        console.log("initializePageAction", tab);
+    
+        const hostname = tab.url.match(hostnameRegex)[1];
+        const cacheName = hostname + "-cache";
+    
+        const existing = await browser.storage.sync.get(hostname);
+    
+        if (existing[hostname] == "i") return;
+        
+        const cachedForHostname = await browser.storage.sync.get(cacheName);
+        let cache = cachedForHostname[cacheName];
+        
+        if (
+            cache === undefined ||
+            cache.cssRulesCache === undefined ||
+            cache.cssRulesCache === "" 
+        ) {
+            return false;
+        }
+    
+        console.log(cache.cssRulesCache);
+        
+        browser.tabs.insertCSS(tab.id, {code: cache.cssRulesCache}).then(() => {
+            showBlockedIcon(tab.id);
+
+        }, console.info);
+        
+    } catch (error) {
+        console.error(error);
+    }
+
+
+
+}
+
+
+browser.tabs.onUpdated.addListener(initializePageAction);
