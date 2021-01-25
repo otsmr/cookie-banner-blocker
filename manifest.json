@@ -19,7 +19,7 @@
       "matches": [
         "<all_urls>"
       ],
-      "run_at": "document_start",
+      "run_at": "document_end",
       "js": [
         "content.js"
       ]
@@ -40,6 +40,7 @@
     "storage",
     "activeTab",
     "tabs",
-    "<all_urls>"
+    "<all_urls>",
+    "contextMenus"
   ]
 }

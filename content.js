@@ -141,9 +141,10 @@ body { overflow: auto !important; }
 
 
 // -- Main function --
+let currentWaitTimer = 200;
 
 function startPopUpCleaner () {
-
+    
     removeScrollBlocker();
 
     if (!configs.removeRadicalAllPopus && startUp <= +new Date() - 1000 * 30) {
@@ -157,14 +158,21 @@ function startPopUpCleaner () {
         }
     }
 
-    if (lastModification >= +new Date() - 500) {
+    // So that the performance when using pages does not suffer as for
+    // example on youtube.com, where elements are quite often mitigated.
+    if ((+new Date() - startUp) / 1000 > 5) {
+        currentWaitTimer = 500;
+    }
+    if ((+new Date() - startUp) / 1000 > 10) {
+        currentWaitTimer = 1000;
+    }
+
+    if (lastModification >= +new Date() - currentWaitTimer) {
         // The next function is very computationally intensive (for loops), so it should not
         // be called immediately after each change, but several changes should
         // first be collected and then checked again.
         return;
     }
-
-    console.log("SEARCH");
 
     if (removed = findAndRemovePopups() > 0) {
         browser.runtime.sendMessage('blocked-inline-popup');
@@ -180,7 +188,7 @@ function createObserver() {
 
         lastModification = +new Date();
         if (checkAfterModification) clearTimeout(checkAfterModification);
-        setTimeout(startPopUpCleaner, 500);
+        checkAfterModification = setTimeout(startPopUpCleaner, currentWaitTimer);
         
     })
 
@@ -191,15 +199,6 @@ function createObserver() {
 try {
 
     // run initially (after dom content loaded)
-
-    let domContentLoaded = false;
-    let waitForDomIntervall = null;
-
-    window.addEventListener('DOMContentLoaded', (event) => {
-        console.log('DOM fully loaded and parsed');
-        removeScrollBlocker();
-        domContentLoaded = true;
-    });
     
     const hostname = window.location.hostname;
     
@@ -209,27 +208,11 @@ try {
             return browser.runtime.sendMessage('ignored');
         }
         
-        if (!await restoredFromCache()) {
-            logger.info("[inline-popup-blocker] startPopUpCleaner");
-            
+        // let useCachedVersion = await getCSSCache();
 
-            function start () {
-                if (waitForDomIntervall) clearInterval(waitForDomIntervall);
-                if (!domContentLoaded) return;
-                
-                // Perform this function only once
-                domContentLoaded = false;
-
-                startPopUpCleaner();
-                createObserver();
-            }
-            start();
-            waitForDomIntervall = setInterval(start, 10);
-
-        } else {
-            browser.runtime.sendMessage('blocked-by-cache');
-        }
-
+        removeScrollBlocker();
+        startPopUpCleaner();
+        createObserver();
 
     }).catch(logger.error);
     
@@ -250,10 +233,7 @@ const cacheName = location.host + "-cache";
 let elementsToRemove = [];
 let cssRulesCache = "";
 
-async function restoredFromCache () {
-
-    // -> background
-    // https://github.com/mdn/webextensions-examples/blob/master/apply-css/background.js
+async function getCSSCache () {
     
     const cachedForHostname = await browser.storage.sync.get(cacheName);
     let cache = cachedForHostname[cacheName];
@@ -263,14 +243,14 @@ async function restoredFromCache () {
         cache.cssRulesCache === undefined ||
         cache.cssRulesCache === "" 
     ) {
-        return false;
+        return null;
     }
         
     logger.info("[inline-popup-blocker] restoredFromCache");
 
-    // addStyleRules(cache.cssRulesCache, false);
+    addStyleRules(cache.cssRulesCache, false);
 
-    return true;
+    return cache.cssRulesCache;
 
 }
 
