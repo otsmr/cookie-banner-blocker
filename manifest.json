@@ -1,8 +1,8 @@
 {
-  "description": "Simple Cookie Banner & Inline Popup Blocker",
+  "description": "Simple inline popup blocker that removes most cookie and newsletter popups without blocklist.",
   "manifest_version": 2,
   "name": "Inline Popup Blocker",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "homepage_url": "https://github.com/otsmr/inline-popup-blocker",
   "icons": {
     "48": "icons/cookie-bite-solid.svg",
