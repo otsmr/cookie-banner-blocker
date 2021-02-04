@@ -11,6 +11,18 @@ let configs = {
 };
 
 
+// All tags that are not used for a popup are filtered out via the
+// CSS selector :not().
+// This will also find CUSTOM tags like on youtube.com (<paper-dialog>)
+
+const HTML_TAGS = [ "a", "abbr", "acronym", "address", "applet", "area", "article", "aside", "audio", "b", "base", "basefont", "bdi", "bdo", "big", "blockquote", "body", "br", "button", "canvas", "caption", "center", "cite", "code", "col", "colgroup", "data", "datalist", "dd", "del", "details", "dfn", "dialog", "dir", "div", "dl", "dt", "em", "embed", "fieldset", "figcaption", "figure", "font", "footer", "form", "frame", "frameset", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hr", "html", "i", "iframe", "img", "input", "ins", "kbd", "label", "legend", "li", "link", "main", "map", "mark", "meta", "meter", "nav", "noframes", "noscript", "object", "ol", "optgroup", "option", "output", "p", "param", "picture", "pre", "progress", "q", "rp", "rt", "ruby", "s", "samp", "script", "section", "select", "small", "source", "span", "strike", "strong", "style", "sub", "summary", "sup", "svg", "table", "tbody", "td", "template", "textarea", "tfoot", "th", "thead", "time", "title", "tr", "track", "tt", "u", "ul", "var", "video", "wbr", ]
+
+
+const POPUP_TAGS = ['div', 'section', 'footer', 'aside', 'form']
+const IGNORE_TAGS_SELECTOR = HTML_TAGS.filter(tag => !POPUP_TAGS.find(e => e === tag)).map(tag => `:not(${tag})`).join("")
+const POPUP_TAGS_SELECTOR = "*" + IGNORE_TAGS_SELECTOR;
+
+
 function log (type, ...msg) {
     if (configs.verbose)
     console[type](...msg);
@@ -28,10 +40,9 @@ const logger = {
 // The logic: it searches for overlays that overlay the whole page.
 // The overlay and everything that has a higher zIndex will be removed.
 
-function findAndRemovePopups() {
+function findAndRemovePopups(checkElements = null) {
 
-
-    let fixedElements = findElementByCssRule('position', "fixed");
+    let fixedElements = (checkElements) ? checkElements : findElementByCssRule('position', "fixed");
 
     let zIndex = -1;
     let removed = 0;
@@ -43,7 +54,6 @@ function findAndRemovePopups() {
         
         if ( rect.top === 0 && hasSameSizeAsWindow(rect) ) {
             let tempZIndex = window.getComputedStyle(fixedElement).zIndex;
-            if (tempZIndex < 500) continue;
             if (tempZIndex > zIndex) {
                 zIndex = tempZIndex;
             }
@@ -143,7 +153,7 @@ body { overflow: auto !important; }
 // -- Main function --
 let currentWaitTimer = 200;
 
-function startPopUpCleaner () {
+function startPopUpCleaner (checkElements = null) {
     
     removeScrollBlocker();
 
@@ -166,6 +176,9 @@ function startPopUpCleaner () {
     if ((+new Date() - startUp) / 1000 > 10) {
         currentWaitTimer = 1000;
     }
+    if ((+new Date() - startUp) / 1000 > 20) {
+        currentWaitTimer = 2000;
+    }
 
     if (lastModification >= +new Date() - currentWaitTimer) {
         // The next function is very computationally intensive (for loops), so it should not
@@ -174,7 +187,7 @@ function startPopUpCleaner () {
         return;
     }
 
-    if (removed = findAndRemovePopups() > 0) {
+    if (removed = findAndRemovePopups(checkElements) > 0) {
         browser.runtime.sendMessage('blocked-inline-popup');
     }
 
@@ -184,15 +197,37 @@ function startPopUpCleaner () {
 function createObserver() {
 
     // callback function to execute when mutations are observed
+    let checkElements = []
     const observer = new MutationObserver(mutationRecords => {
+   
+        let elements = mutationRecords.map(e => e.target);
+        for (element of elements) {
+            elements = elements.concat([...element.querySelectorAll(POPUP_TAGS_SELECTOR)]);
+        }
 
-        lastModification = +new Date();
-        if (checkAfterModification) clearTimeout(checkAfterModification);
-        checkAfterModification = setTimeout(startPopUpCleaner, currentWaitTimer);
-        
+        for (element of elements) {
+            if (window.getComputedStyle(element, null)["position"] === "fixed") {
+                checkElements.push(element);
+            }
+        }
+
+        if (checkElements.length > 0) {
+
+            lastModification = +new Date();
+            if (checkAfterModification) clearTimeout(checkAfterModification);
+
+            checkAfterModification = setTimeout(() => {
+
+                startPopUpCleaner(checkElements);
+                checkElements = [];
+
+            }, currentWaitTimer);
+
+        }
+
     })
 
-    observer.observe(document.body, { attributes: false, childList: true, subtree: true })
+    observer.observe(document.body, { attributes: true, childList: true, subtree: true })
 
 }
 
@@ -299,10 +334,10 @@ function getIdentifierForElement (element) {
 
 function findElementByCssRule (name, value, check = (a, b) => a === b, element = document.body) {
 
-    let elements = [...element.getElementsByTagName("*")];
-
+    let elements = [...element.querySelectorAll(POPUP_TAGS_SELECTOR)];
+    
     let shadowElements = elements.filter(e => e.shadowRoot).map(e => {
-        return [...e.shadowRoot.childNodes].map(e => [...e.getElementsByTagName("*")]).flat();
+        return [...e.shadowRoot.childNodes].map(e => [...e.querySelectorAll(POPUP_TAGS_SELECTOR)]).flat();
     }).flat();
 
     elements = elements.concat(shadowElements);
@@ -343,7 +378,15 @@ function hideElementWithCSS (element) {
 
 }
 
+let rulesCache = []
+
 function addStyleRules (rules, addToCache = true) {
+
+    if (rulesCache.find(e => e === rules)) {
+        return;
+    }
+
+    rulesCache.push(rules);
 
     if (addToCache) {
         cssRulesCache += rules;
