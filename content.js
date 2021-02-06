@@ -241,7 +241,9 @@ try {
             return browser.runtime.sendMessage('ignored');
         }
         
-        // let useCachedVersion = await getCSSCache();
+        if(await getCSSCache()) {
+            removeScrollBlocker();
+        }
 
         startPopUpCleaner();
         createObserver();
