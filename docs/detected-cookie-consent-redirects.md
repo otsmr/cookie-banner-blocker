@@ -1,4 +1,4 @@
-# Problem
+# Prevent cookie banner redirects
 
 Pages like golem.de or spiegel.de redirect the user to another page to accept the cookies.  
 While analyzing the golem site I noticed the following script which includes AES and RSA implementations.  
@@ -66,6 +66,11 @@ So you get a `HTTP/1.1 200 OK` as response.
 In the case of spiegel, this redirection is done using JavaScript. Here the user agent must also be adapted as follows, so that one is not redirected:
 ```
 User-Agent: googlebot
+```
+
+Spiegel does not redirect the page if the user agent is one of the following:
+```js
+b = ["APIs-Google", "Mediapartners-Google", "AdsBot-Google-Mobile", "AdsBot-Google", "Googlebot-Image", "Googlebot-News", "Googlebot-Video", "Googlebot\\/", "AdsBot-Google-Mobile-Apps", "Google (\\+https:\\/\\/developers.google.com\\/+\\/web\\/snippet\\/)", "Google-AMPHTML", "Facebot", "facebookexternalhit", "Twitterbot", "PocketParser", "bingbot", "msnbot", "msnbot-media", "AdldxBot", "BingPreview\\/", "DuckDuckBot", "Pinterest", "Pinterestbot", "ToutiaoSpider", "upday.com", "XING-contenttabreceiver", "xing.com", "Qwant-News", "qwant.com", "Qwantify", "Yahoo! Slurp", "FlipboardProxy", "YandexBot", "Feedly", "LinkedInBot", "Applebot", "NextCloud", "ia_archiver", "outbrain", "Sogou", "exabot", "Baiduspider", "Baidu-YunGuanCe", "ScopeContentAG-HTTP-Client www.thescope.com\\/0.1", "archive.org_bot", "Chrome-Lighthouse"]
 ```
 
 

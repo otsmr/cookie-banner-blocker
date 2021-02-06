@@ -155,8 +155,6 @@ let currentWaitTimer = 200;
 
 function startPopUpCleaner (checkElements = null) {
     
-    removeScrollBlocker();
-
     if (!configs.removeRadicalAllPopus && startUp <= +new Date() - 1000 * 30) {
         // After 30 seconds at the latest, all cookie banners should have appeared.
         return;
@@ -245,7 +243,6 @@ try {
         
         // let useCachedVersion = await getCSSCache();
 
-        removeScrollBlocker();
         startPopUpCleaner();
         createObserver();
 
@@ -391,6 +388,7 @@ function addStyleRules (rules, addToCache = true) {
     if (addToCache) {
         cssRulesCache += rules;
         cacheCssRules();
+        removeScrollBlocker();
     }
 
     logger.info("[inline-popup-blocker] ADD customCSSRules ", rules.split("\n").join(" "));

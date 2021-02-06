@@ -27,7 +27,10 @@
   ],
   "background": {
     "scripts": [
-      "background.js"
+      "background/shared-utils.js",
+      "background/handle-page-action.js",
+      "background/detected-cookie-consent-redirects.js",
+      "background/inject-cached-css.js"
     ]
   },
   "page_action": {
@@ -39,6 +42,8 @@
   "permissions": [
     "storage",
     "activeTab",
+    "webRequest",
+    "webRequestBlocking",
     "tabs",
     "<all_urls>",
     "contextMenus"
