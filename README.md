@@ -1,23 +1,30 @@
-# [Inline Popup Blocker](https://addons.mozilla.org/de/firefox/addon/inline-popup-blocker/)
+# [Cookie Banner Blocker](https://addons.mozilla.org/de/firefox/addon/cookie-banner-blocker/)
 
-Simple inline popup blocker that removes most cookie and newsletter popups without blocklist.  
-Redirects to consent pages are also detected and prevented (for example at golem.de or spiegel.de)
+Ein Cookie-Banner-Blocker, der die meisten Cookie- und Newsletter-Popups ohne Blockliste entfernt.   
+Es werden auch sogenannte "Einwilligungs-Cookie-Banner-Seiten" erkannt, welche den Benutzer vor dem Öffnen der Seite für eine Zustimmung weiterleiten.  
+
+[Von Firefox Addons installieren](https://addons.mozilla.org/de/firefox/addon/cookie-banner-blocker/)
+
+Chrome und Co. werden derzeit nicht unterstützt und auch in Zukunft nicht unterstützt werden. Das wäre auch irgendwie lächerlich oder nicht?
 
 ![Video](example.gif)
 
 
-## Prevent cookie banner redirects
-A short analysis about the used technique can be found [here](docs/detected-cookie-consent-redirects.md).
 
+## Wie funktioniert die Erkennung?
+Ich konnte grob drei verschiedene Kategorien von Bannern identifizieren.
 
-## Inline Popup Blocker
-Searches for popups like newsletter signups, cookie banners or similar, which are displayed as popups within the pages. It searches for overlays that overlay the whole page. The overlay and everything that has a higher zIndex will be removed.
+### einfacher Cookie-Banner
+Diese befinden sich meist am unteren Rand der Seite und sind durch ihre aufdringliche Farbe sehr störend. Man erkennt sie daran, dass sie fixiert sind (position: fixed) und oft einen hohen Z-Index haben. Da dies auch auf die meisten Navigation zutrifft, wird zusätzlich nach Keywords (Cookie :)) gesucht.
 
+### Overlay-Banner
+Diese besonders auffälligen Banner verdunkeln den Hintergrund und machen die Seite bis zum akzeptieren unbenutzbar. Diese Banner verraten sich dadurch, dass sie fixiert sind und die gleiche Größe wie die eigentliche Seite haben. Wird ein solches Overlay gefunden, werden alle Elemente mit einem höheren z-Index entfernt. Zusätzlich wird eine CSS-Regel eingefügt, die die Anti-Scrollen-Regeln der Seite überschreibt.
 
-## Cookie Banner Blocker
-Fixed or absolute element, elements with high z-index, which have inside specific keywords.
+### Redirect-Banner
+Diese Kategorie von Banner leiten den Benutzer auf eine separate "Einwilligungs-Cookie-Banner-Seiten" um. Erkannt werden sie durch Keywords in der Url und der Tatsache, dass die vorherige Url meist in einem GET-Parameter enthalten ist. Die Umleitung wird verhindert, indem der User-Agent auf einen Suchmaschinen-User-Agent geändert wird. Danach muss man keine Zustimmung mehr geben. Denn die Seite wollen ja weiterhin von Google und co. gecrawlt werden.
 
 
 
 ## Credits
-Inspired by [this project](https://github.com/jannisch/cookie-popup-blocker).
+Inspiriert wurde ich von diesem <a href="https://github.com/jannisch/cookie-popup-blocker">Projekt</a>  
+Die Icons sind von <a href="https://fontawesome.com/license">Font Awesome</a>
