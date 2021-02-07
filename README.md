@@ -3,7 +3,7 @@
 Ein Cookie-Banner-Blocker, der die meisten Cookie- und Newsletter-Popups ohne Blockliste entfernt.   
 Es werden auch sogenannte "Einwilligungs-Cookie-Banner-Seiten" erkannt, welche den Benutzer vor dem Öffnen der Seite für eine Zustimmung weiterleiten.  
 
-[Über Firefox Addons installieren](https://addons.mozilla.org/de/firefox/addon/cookie-banner-blocker/)
+[Firefox Addons](https://addons.mozilla.org/de/firefox/addon/cookie-banner-blocker/)
 
 Chrome und Co. werden derzeit nicht unterstützt und auch in Zukunft nicht unterstützt werden. Das wäre auch irgendwie lächerlich oder nicht?
 
