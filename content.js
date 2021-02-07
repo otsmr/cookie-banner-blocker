@@ -161,22 +161,16 @@ function startPopUpCleaner (checkElements = null) {
     }
 
     if (!blockedCookieBanner) {
-        if (blockedCookieBanner = removeCookieBanner()) {
-            browser.runtime.sendMessage('blocked-cookie-banner');
-        }
+        blockedCookieBanner = removeCookieBanner()
     }
 
     // So that the performance when using pages does not suffer as for
     // example on youtube.com, where elements are quite often mitigated.
-    if ((+new Date() - startUp) / 1000 > 5) {
-        currentWaitTimer = 500;
-    }
-    if ((+new Date() - startUp) / 1000 > 10) {
-        currentWaitTimer = 1000;
-    }
-    if ((+new Date() - startUp) / 1000 > 20) {
-        currentWaitTimer = 2000;
-    }
+    let seconds = (+new Date() - startUp) / 1000;
+
+    if (seconds > 5)  currentWaitTimer = 500;
+    if (seconds > 10) currentWaitTimer = 1000;
+    if (seconds > 20) currentWaitTimer = 2000;
 
     if (lastModification >= +new Date() - currentWaitTimer) {
         // The next function is very computationally intensive (for loops), so it should not
@@ -185,9 +179,7 @@ function startPopUpCleaner (checkElements = null) {
         return;
     }
 
-    if (removed = findAndRemovePopups(checkElements) > 0) {
-        browser.runtime.sendMessage('blocked-inline-popup');
-    }
+    findAndRemovePopups(checkElements);
 
 }
 
@@ -225,7 +217,7 @@ function createObserver() {
 
     })
 
-    observer.observe(document.body, { attributes: true, childList: true, subtree: true })
+    observer.observe(document.body, { attributes: false, childList: true, subtree: true })
 
 }
 
@@ -237,9 +229,7 @@ try {
     
     browser.storage.sync.get(hostname).then(async (res) => {
         
-        if (res[hostname] == 'i') {
-            return browser.runtime.sendMessage('ignored');
-        }
+        if (res[hostname] == 'i') return;
         
         if(await getCSSCache()) {
             removeScrollBlocker();
@@ -314,7 +304,8 @@ function getSelectorByIdentifier (elementToRemove) {
         selector += "#" + elementToRemove.id;
     
     if (elementToRemove.className !== "")
-        selector += "." + elementToRemove.className.split(" ").join(".");
+        // filtering is important if there are too many spaces in the className for some reason
+        selector += "." + elementToRemove.className.split(" ").filter(e => e !== "").join(".");
 
     return selector;
     
@@ -375,6 +366,14 @@ function hideElementWithCSS (element) {
     let selector = getSelectorByIdentifier(getIdentifierForElement(element));
     addStyleRules(`${selector} { display: none !important; }`);
 
+    setTimeout(() => {
+        console.log(selector, element, element.className);
+        if (window.getComputedStyle(element).display !== "block") {
+            // hideElementWithCSS(element);
+            console.log("hideElementWithCSS", window.getComputedStyle(element).display);
+        }
+    }, 1000);
+
 }
 
 let rulesCache = []
@@ -391,6 +390,7 @@ function addStyleRules (rules, addToCache = true) {
         cssRulesCache += rules;
         cacheCssRules();
         removeScrollBlocker();
+        browser.runtime.sendMessage('blocked');
     }
 
     logger.info("[inline-popup-blocker] ADD customCSSRules ", rules.split("\n").join(" "));

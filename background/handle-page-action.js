@@ -5,33 +5,9 @@ const urlConsentPageKeywords = [ "consent", "zustimmung" ]
 
 browser.runtime.onMessage.addListener((msg, sender) => {
     const tabId = sender.tab.id;
-    
-    switch (msg) {
 
-        case "ignored":
-            showIgnoredIcon(tabId);
-            break;
-
-        case "blocked-inline-popup":
-            //TODO: custom icon for blocked-inline-popup
-            showBlockedIcon(tabId);
-            break;
-
-        case "blocked-by-cache":
-            //TODO: custom icon for blocked-by-cache
-            showBlockedIcon(tabId);
-            break;
-
-        case "blocked-cookie-banner":
-            showBlockedIcon(tabId);
-            break;
-    
-        default:
-            break;
-
-    }
-
-    overrideNavigatorData
+    if (msg === "blocked")
+        showBlockedIcon(tabId);
 
 });
 

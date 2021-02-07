@@ -48,7 +48,7 @@ function addNewConsentPageRule (details, detectedWith) {
 }
 
 
-browser.webRequest.onBeforeSendHeaders.addListener((details) => {
+browser.webRequest.onBeforeSendHeaders.addListener(async (details) => {
 
     let modifyHeaders = false;
 
@@ -66,6 +66,7 @@ browser.webRequest.onBeforeSendHeaders.addListener((details) => {
     }
 
     if (!modifyHeaders) return;
+    if (await isIgnoreThisTabEnabled(details.tabId, details.url)) return;
 
     showPageActionIcons[details.tabId] = true;
 
@@ -106,22 +107,25 @@ function checkIsAlreadyDetected (details) {
 
 }
 
-browser.webRequest.onBeforeRequest.addListener((details) => {
+browser.webRequest.onBeforeRequest.addListener(async (details) => {
     if (filterWebRequets(details)) return;
 
+    
     let modifyHeaders = checkIsAlreadyDetected(details);
-
+    
     if (!modifyHeaders && typeof details.originUrl !== "undefined") {
-
+        
         const score = getConsentPageScore(details.url, details.originUrl);
-
+        
         if (score >= 2) {
             addNewConsentPageRule(details, "");
             modifyHeaders = checkIsAlreadyDetected(details);
-
+            
         }
-
+        
     }
+
+    if (await isIgnoreThisTabEnabled(details.tabId, details.url)) return;
 
     if (modifyHeaders) {
 
@@ -139,15 +143,13 @@ browser.webRequest.onBeforeRequest.addListener((details) => {
 // Detect redirects to consent page through *HTTP header Location*
 // (like on golem.de)
 
-browser.webRequest.onBeforeRedirect.addListener(async (details) => {
+browser.webRequest.onBeforeRedirect.addListener((details) => {
     if (filterWebRequets(details)) return;
-    if (await isIgnoreThisTabEnabled(details.tabId)) return;
     
     const score = getConsentPageScore(details.redirectUrl, details.url);
     
     if (score >= 2) {
         addNewConsentPageRule(details, "header-location");
     }
-
 
 }, {urls: ["<all_urls>"]});
