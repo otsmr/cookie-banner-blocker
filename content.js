@@ -366,14 +366,6 @@ function hideElementWithCSS (element) {
     let selector = getSelectorByIdentifier(getIdentifierForElement(element));
     addStyleRules(`${selector} { display: none !important; }`);
 
-    setTimeout(() => {
-        console.log(selector, element, element.className);
-        if (window.getComputedStyle(element).display !== "block") {
-            // hideElementWithCSS(element);
-            console.log("hideElementWithCSS", window.getComputedStyle(element).display);
-        }
-    }, 1000);
-
 }
 
 let rulesCache = []

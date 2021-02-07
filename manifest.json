@@ -1,7 +1,7 @@
 {
-  "description": "Simple inline popup blocker that removes most cookie and newsletter popups without blocklist.",
+  "description": "Ein Cookie-Banner-Blocker, der die meisten Cookie- und Newsletter-Popups ohne Blockliste entfernt.",
   "manifest_version": 2,
-  "name": "Inline Popup Blocker",
+  "name": "Cookie-Banner-Blocker",
   "version": "0.1.6",
   "homepage_url": "https://github.com/otsmr/inline-popup-blocker",
   "icons": {
@@ -25,6 +25,10 @@
       ]
     }
   ],
+  "options_ui": {
+      "page": "options/options.html",
+      "browser_style": true
+  },
   "background": {
     "scripts": [
       "background/shared-utils.js",

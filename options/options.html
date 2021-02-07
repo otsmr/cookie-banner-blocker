@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8">
+
+    <style>
+
+        .main {
+            background: #fff;
+            color: #000;
+            min-height: 350px;
+            padding: 30px 0;
+        }
+
+        .flex {
+            display: fley;
+        }
+        .flex > * {
+            flex: 1;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .main {
+                color: #fff;
+                background: #202023;
+            }
+        }
+
+    </style>
+  </head>
+
+<body>
+
+    <div class="main">
+        <form>
+            <!-- <div class="flex">
+                <label>Ausgabe in der Konsole anzeigen</label>
+                <input type="checkbox" id="verbose" >
+            </div>
+            <br />
+            <button type="submit">Speichern</button> -->
+        </form>
+    </div>
+  <script src="options.js"></script>
+</body>
+
+</html>
