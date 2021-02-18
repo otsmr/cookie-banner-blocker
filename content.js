@@ -331,7 +331,8 @@ function findElementByCssRule (name, value, check = (a, b) => a === b, element =
     let elements = [...element.querySelectorAll(POPUP_TAGS_SELECTOR)];
     
     let shadowElements = elements.filter(e => e.shadowRoot).map(e => {
-        return [...e.shadowRoot.childNodes].map(e => [...e.querySelectorAll(POPUP_TAGS_SELECTOR)]).flat();
+        // get all html elements from the shadow element and filter elements like the style tag 
+        return [...e.shadowRoot.childNodes].filter(e => e.querySelectorAll).map(e => [...e.querySelectorAll(POPUP_TAGS_SELECTOR)]).flat();
     }).flat();
 
     elements = elements.concat(shadowElements);
