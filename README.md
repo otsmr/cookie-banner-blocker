@@ -5,10 +5,8 @@ Es werden auch sogenannte "Einwilligungs-Cookie-Banner-Seiten" erkannt, welche d
 
 [Firefox Addons](https://addons.mozilla.org/de/firefox/addon/cookie-banner-blocker/)
 
-Chrome und Co. werden derzeit nicht unterstützt und auch in Zukunft nicht unterstützt werden. Das wäre auch irgendwie lächerlich oder nicht?
 
 ![Video](example.gif)
-
 
 
 ## Wie funktioniert die Erkennung?
