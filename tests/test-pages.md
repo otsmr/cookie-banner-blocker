@@ -1,14 +1,16 @@
 # detected-cookie-consent-redirects
-- spiegel.de
-- golem.de
+- https://spiegel.de
+- https://golem.de
+- https://zeit.de
 
 
-# find and remove popups
+# normal cookie popups
 
-- google.de
-- youtube.com (!)
-
-
-## with shadow elements
-
-- heise.de
+- https://google.de
+- https://youtube.com
+- https://heise.de
+- https://reiseauskunft.bahn.de
+- https://www.computerbase.de/
+- https://www.gruender-welt.com/
+- https://www.w3schools.com/
+- https://www.uni-goettingen.de/

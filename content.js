@@ -94,10 +94,9 @@ function removeCookieBanner () {
 
     let blocked = false;
 
-    let fixedElements = findElementByCssRule('position', "fixed");
+    let fixedElements = findElementByCssRule('position', null, e => e === "fixed" || e === "absolute");
 
     fixedElements = fixedElements.concat(findElementByCssRule('zIndex', 100, (a, b) => a > b));
-    fixedElements = fixedElements.concat(findElementByCssRule('position', "absolute"));
 
     fixedElements.forEach(fixedElement => {
 
@@ -216,6 +215,12 @@ function createObserver() {
         let elements = mutationRecords.map(e => e.target);
         for (element of elements) {
             elements = elements.concat([...element.querySelectorAll(POPUP_TAGS_SELECTOR)]);
+        }
+
+        if (elements.length > 2000) {
+            // at heise.de the cookie banner appears at ~1400 changes
+            // prevent performance problems (youtube.com often has up to 20000 changes)
+            return;
         }
 
         for (element of elements) {
