@@ -156,19 +156,6 @@ body { overflow: auto !important; }
 
     }
 
-    // Some sites have special rules when the cookie banner is displayed (see https://www.computerbase.de)
-    const newClassName = []
-    document.body.classList.forEach(className => {
-
-        for (const keyword of configs.cookieBodyClassKeywords) {
-            if (className.indexOf(keyword) !== -1) 
-                return;
-        }
-        newClassName.push(className);
-    })
-
-    document.body.className = newClassName.join(" ");
-
 }
 
 
@@ -261,6 +248,7 @@ try {
         
         if(await getCSSCache()) {
             removeScrollBlocker();
+            removeClassNamesByKeywords();
         }
 
         startPopUpCleaner();
@@ -268,6 +256,7 @@ try {
 
         setTimeout(() => {
             startPopUpCleaner();
+            removeClassNamesByKeywords();
         }, 100);
 
     }).catch(logger.error);
@@ -289,7 +278,7 @@ const cacheName = location.host + "-cache";
 let elementsToRemove = [];
 let cssRulesCache = "";
 
-async function getCSSCache () {
+async function getCSSCache (addRules = true) {
     
     const cachedForHostname = await browser.storage.sync.get(cacheName);
     let cache = cachedForHostname[cacheName];
@@ -302,9 +291,10 @@ async function getCSSCache () {
         return null;
     }
         
-    logger.info("[inline-popup-blocker] restoredFromCache");
-
-    addStyleRules(cache.cssRulesCache, false);
+    if (addRules) {
+        logger.info("[inline-popup-blocker] restoredFromCache");
+        addStyleRules(cache.cssRulesCache, false);
+    }
 
     return cache.cssRulesCache;
 
@@ -318,7 +308,7 @@ function cacheCssRules () {
 
         browser.storage.sync.set({ [cacheName]:  {
             ...cachedForHostname[cacheName],
-            cssRulesCache
+            cssRulesCache: (await getCSSCache() || "") + " " +  cssRulesCache
         }});
 
     })
@@ -327,6 +317,23 @@ function cacheCssRules () {
 
 
 //  ---------- Some Helper Functions ----------
+
+function removeClassNamesByKeywords () {
+
+    // Some sites have special rules when the cookie banner is displayed (see https://www.computerbase.de)
+    const newClassName = []
+    document.body.classList.forEach(className => {
+
+        for (const keyword of configs.cookieBodyClassKeywords) {
+            if (className.indexOf(keyword) !== -1) 
+                return;
+        }
+        newClassName.push(className);
+    })
+
+    document.body.className = newClassName.join(" ");
+    
+}
 
 function getSelectorByIdentifier (elementToRemove) {
 

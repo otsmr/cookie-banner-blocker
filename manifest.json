@@ -39,7 +39,7 @@
   },
   "page_action": {
     "browser_style": true,
-    "default_title": "Keine Cookie-Banner gefunden ",
+    "default_title": "Keine Cookie-Banner gefunden",
     "default_icon": "icons/cookie-solid.svg",
     "pinned": true
   },

@@ -5,7 +5,7 @@ function showBlockedIcon (tabId) {
     browser.pageAction.setIcon({ tabId, path: "icons/cookie-bite-solid.svg" });
     browser.pageAction.setTitle({
         tabId,
-        title: "Inline Popup Blocker für diese Seite deaktivieren",
+        title: "Cookie-Banner-Blocker für diese Seite deaktivieren",
     });
     browser.pageAction.show(tabId);
 
@@ -16,7 +16,7 @@ function showIgnoredIcon (tabId) {
     browser.pageAction.setIcon({ tabId, path: "icons/cookie-solid.svg" });
     browser.pageAction.setTitle({
         tabId,
-        title: "Inline Popup Blocker für diese Seite aktivieren",
+        title: "Cookie-Banner-Blocker für diese Seite aktivieren",
     });
     browser.pageAction.show(tabId);
 
