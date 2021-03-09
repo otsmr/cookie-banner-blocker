@@ -7,6 +7,7 @@ let checkAfterModification = null;
 let configs = {
     removeRadicalAllPopus: true,
     cookieHtmlKeywords: [ "cookie" ],
+    cookieBodyClassKeywords: [ "cookie", "consent" ],
     verbose: true
 };
 
@@ -18,7 +19,7 @@ let configs = {
 const HTML_TAGS = [ "a", "abbr", "acronym", "address", "applet", "area", "article", "aside", "audio", "b", "base", "basefont", "bdi", "bdo", "big", "blockquote", "body", "br", "button", "canvas", "caption", "center", "cite", "code", "col", "colgroup", "data", "datalist", "dd", "del", "details", "dfn", "dialog", "dir", "div", "dl", "dt", "em", "embed", "fieldset", "figcaption", "figure", "font", "footer", "form", "frame", "frameset", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hr", "html", "i", "iframe", "img", "input", "ins", "kbd", "label", "legend", "li", "link", "main", "map", "mark", "meta", "meter", "nav", "noframes", "noscript", "object", "ol", "optgroup", "option", "output", "p", "param", "picture", "pre", "progress", "q", "rp", "rt", "ruby", "s", "samp", "script", "section", "select", "small", "source", "span", "strike", "strong", "style", "sub", "summary", "sup", "svg", "table", "tbody", "td", "template", "textarea", "tfoot", "th", "thead", "time", "title", "tr", "track", "tt", "u", "ul", "var", "video", "wbr", ]
 
 
-const POPUP_TAGS = ['div', 'section', 'footer', 'aside', 'form', 'iframe']
+const POPUP_TAGS = ['div', 'section', 'footer', 'aside', 'form', 'iframe', 'dialog']
 const IGNORE_TAGS_SELECTOR = HTML_TAGS.filter(tag => !POPUP_TAGS.find(e => e === tag)).map(tag => `:not(${tag})`).join("")
 const POPUP_TAGS_SELECTOR = "*" + IGNORE_TAGS_SELECTOR;
 
@@ -63,7 +64,7 @@ function findAndRemovePopups(checkElements = null) {
     }
 
     if (removeFixedElements.length > 0) {
-        logger.info("[inline-popup-blocker] REMOVE removeFixedElements: ", removeFixedElements);
+        logger.info("[inline-popup-blocker] FOUND Element (OVERLAY): ", removeFixedElements);
         removeFixedElements.forEach(hideElementWithCSS);
         removed = removeFixedElements.length;
     }
@@ -72,7 +73,7 @@ function findAndRemovePopups(checkElements = null) {
 
         let popupElements = findElementByCssRule('zIndex', parseInt(zIndex), (a, b) => a > b);
 
-        logger.info("[inline-popup-blocker] REMOVE popupElements: ", popupElements);
+        logger.info("[inline-popup-blocker] FOUND Element (> OVERLAY): ", popupElements);
 
         popupElements.forEach(hideElementWithCSS);
 
@@ -109,7 +110,7 @@ function removeCookieBanner () {
                 if (fixedElement.innerHTML.toLowerCase().indexOf(cookieHtmlKeyword) > 1) {
                     if ( window.getComputedStyle(fixedElement).display !== "none") {
 
-                        logger.info("[inline-popup-blocker] HIDE fixedElement (keyword = " + cookieHtmlKeyword + "): ", fixedElement);   
+                        logger.info("[inline-popup-blocker] FOUND Element by keyword = " + cookieHtmlKeyword + ": ", fixedElement);   
                         hideElementWithCSS(fixedElement);
                         blocked = true;
 
@@ -133,11 +134,20 @@ function removeScrollBlocker () {
 
     const html = document.getElementsByTagName("html")[0];
 
-    if ( document.body.style.overflow !== "auto" || html.style.overflow !== "auto" ) {
+    if ( document.body.style.overflow !== "unset" || html.style.overflow !== "auto" ) {
 
         [ html, document.body ].forEach(element => {
-            element.style.setProperty("overflow", "auto", "important");
-            element.style.setProperty("position", "unset", "important");
+
+            if (element === document.body) {
+                element.style.setProperty("overflow", "unset", "important");
+            } else {
+                element.style.setProperty("overflow", "auto", "important");
+            }
+
+            // some pages do not work if the position of the body is not absolute (see https://www.uni-goettingen.de/)
+            if (window.getComputedStyle(element).position !== "absolute") {
+                element.style.setProperty("position", "unset", "important");
+            }
         })
 
         addStyleRules(`
@@ -146,6 +156,19 @@ body { overflow: auto !important; }
 `, false);
 
     }
+
+    // Some sites have special rules when the cookie banner is displayed (see https://www.computerbase.de)
+    const newClassName = []
+    document.body.classList.forEach(className => {
+
+        for (const keyword of configs.cookieBodyClassKeywords) {
+            if (className.indexOf(keyword) !== -1) 
+                return;
+        }
+        newClassName.push(className);
+    })
+
+    document.body.className = newClassName.join(" ");
 
 }
 
@@ -362,7 +385,7 @@ function isFixed(node) {
     return window.getComputedStyle(node).position === 'fixed'
 }
 
-function hideElementWithCSS (element) {
+function hideElementWithCSS (element, timeout = false) {
 
     if (element.getRootNode().host) {
         element = element.getRootNode().host;
@@ -370,6 +393,14 @@ function hideElementWithCSS (element) {
 
     let selector = getSelectorByIdentifier(getIdentifierForElement(element));
     addStyleRules(`${selector} { display: none !important; }`);
+
+    if (timeout)
+        return;
+
+    setTimeout(() => {
+        // sometimes the identifier changes and the cookie banner comes back
+        hideElementWithCSS(element, true)
+    }, 500);
 
 }
 
