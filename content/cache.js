@@ -1,8 +1,5 @@
 class CSSRuleCache {
 
-    currentCachedSelectors;
-    cacheID;
-
     constructor () {
         this.currentCachedSelectors = [];
         this.cacheID = window.location.hostname + "-cache";
