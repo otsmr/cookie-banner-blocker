@@ -11,7 +11,7 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "inline-popup-blocker@oproj.de",
-      "strict_min_version": "70.0"
+      "strict_min_version": "64.0"
     }
   },
   "content_scripts": [
