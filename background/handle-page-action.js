@@ -15,6 +15,8 @@ browser.pageAction.onClicked.addListener(async (tab) => {
 
     const hostname = tab.url.match(hostnameRegex)[1];
     const cacheName = hostname + "-cache";
+
+    console.log("onClicked", tab.url, hostname);
     
 	if (await isIgnoreThisTabEnabled(tab.id)) {
 		// remove from blocklist

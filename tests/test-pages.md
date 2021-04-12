@@ -2,6 +2,7 @@
 - https://spiegel.de
 - https://golem.de
 - https://zeit.de
+<!-- - https://youtube.com -->
 
 
 # normal cookie popups
@@ -14,3 +15,7 @@
 - https://www.gruender-welt.com/
 - https://www.w3schools.com/
 - https://www.uni-goettingen.de/
+- https://www.finanzen.net/
+- https://www.ip-insider.de
+- https://www.oeffnungszeitenbuch.de/
+- https://www.askpython.com/
