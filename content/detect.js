@@ -218,6 +218,7 @@ try {
 
         if (cache.currentCachedSelectors.length > 0) {
             injectBlockerRules(cache.currentCachedRules);
+            browser.runtime.sendMessage('blocked');
         }
         
         startPopUpCleaner();
