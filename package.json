@@ -1,6 +1,6 @@
 {
   "name": "cookie-banner-blocker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Ein Cookie-Banner-Blocker, der die meisten Cookie- und Newsletter-Popups ohne Blockliste entfernt.    Es werden auch sogenannte \"Einwilligungs-Cookie-Banner-Seiten\" erkannt, welche den Benutzer vor dem Öffnen der Seite für eine Zustimmung weiterleiten.",
   "main": "content.js",
   "directories": {

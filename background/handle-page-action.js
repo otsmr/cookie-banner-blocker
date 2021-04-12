@@ -24,7 +24,13 @@ browser.pageAction.onClicked.addListener(async (tab) => {
 	} else {
         // add to blocklist
         await browser.storage.sync.remove(cacheName);
-		await browser.storage.sync.set({ [hostname]: "i" });
+        try {
+            // Error: QuotaExceededError: storage.sync API call exceeded its quota limitations.
+            await browser.storage.sync.set({ [hostname]: "i" });
+        } catch (error) {
+            await browser.storage.sync.clear();
+            await browser.storage.sync.set({ [hostname]: "i" });
+        }
         detectedCookieConsentRedirects = []
 	}
     await browser.tabs.reload(tab.id);
