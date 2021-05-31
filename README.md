@@ -12,7 +12,8 @@ Es werden auch sogenannte "Einwilligungs-Cookie-Banner-Seiten" erkannt, welche d
 ## Ziel des Projektes
 Es gibt bereits die Möglichkeit, Cookie-Banner über Blocklisten zu blockieren (unter anderem auch mit dem [uBlock Origin](https://github.com/gorhill/uBlock/)). Dieses Projekt zielt jedoch darauf ab, "neue" Banner oder Redirect-Banner **ohne** Blockliste zu erkennen und auszublenden (ohne eine Zustimmung zugeben).
 
-Leider ist die Erkennung nicht perfekt, daher gibt es die Möglichkeit, den Cookie-Banner-Blocker mit nur einem Klick für eine einzelne Seite zu deaktivieren:
+Leider ist die Erkennung nicht perfekt, daher gibt es die Möglichkeit, den Cookie-Banner-Blocker **mit nur einem Klick für eine einzelne Seite zu deaktivieren**:  
+
 ![disable-cookie-banner-blocker](https://user-images.githubusercontent.com/48922451/120222849-e7590b00-c240-11eb-914f-33d383aa85de.png)
 
 
