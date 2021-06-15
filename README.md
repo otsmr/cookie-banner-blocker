@@ -1,7 +1,7 @@
 # [Cookie Banner Blocker](https://addons.mozilla.org/de/firefox/addon/cookie-banner-blocker/)
 
 Ein Cookie-Banner-Blocker, der die meisten Cookie- und Newsletter-Popups ohne Blockliste entfernt.   
-Es werden auch sogenannte "Einwilligungs-Cookie-Banner-Seiten" erkannt, welche den Benutzer vor dem Öffnen der Seite für eine Zustimmung weiterleiten.  
+Es werden auch sogenannte "Einwilligungs-Cookie-Banner-Seiten" erkannt, die vor dem Öffnen der eigentlichen Seite zu einer eigenen Zustimmungsseite weiterleiten.  
 
 [Firefox Addons](https://addons.mozilla.org/de/firefox/addon/cookie-banner-blocker/)
 
