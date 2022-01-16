@@ -26,16 +26,23 @@ function getSelectorByIdentifier (elementToRemove) {
         // filtering is important if there are too many spaces in the className for some reason
         selector += "." + elementToRemove.className.split(" ").filter(e => e !== "").join(".");
 
+    if (elementToRemove.style !== undefined) {
+        selector += "[style=\"" + elementToRemove.style + "\"]";
+    }
+
     return selector;
     
 }
 
 function getIdentifierForElement (element) {
 
+    console.log(element);
+
     return {
         tagName: element.tagName,
         className: element.className,
         id: element.id,
+        style: element.attributes.style?.value,
         date: +new Date()
     }
 

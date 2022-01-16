@@ -6,7 +6,7 @@ Es werden auch sogenannte "Einwilligungs-Cookie-Banner-Seiten" erkannt, die vor 
 [Firefox Addons](https://addons.mozilla.org/de/firefox/addon/cookie-banner-blocker/)
 
 
-![Video](example.gif)
+![Video](docs/images/example.gif)
 
 
 ## Ziel des Projektes
@@ -29,6 +29,8 @@ Diese besonders auffälligen Banner verdunkeln den Hintergrund und machen die Se
 ### Redirect-Banner
 Diese Kategorie von Banner leiten den Benutzer auf eine separate "Einwilligungs-Cookie-Banner-Seiten" um. Erkannt werden sie durch Keywords in der Url und der Tatsache, dass die vorherige Url meist in einem GET-Parameter enthalten ist. Die Umleitung wird verhindert, indem der User-Agent auf einen Suchmaschinen-User-Agent geändert wird. Danach muss man keine Zustimmung mehr geben. Denn die Seiten wollen ja weiterhin von Google und co. gecrawlt werden.
 
+## Setup
+`npm i -g web-ext`
 
 
 ## Credits

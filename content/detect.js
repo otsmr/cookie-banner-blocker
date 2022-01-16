@@ -97,8 +97,8 @@ function removeCookieBanner () {
 
     fixedElements.forEach(fixedElement => {
 
-        let childrenWithFixed = findElementByCssRule("position", null, e => e === "fixed" || e === "absolute", fixedElement)
-        if (childrenWithFixed.length > 0) return;
+        let childrenWithFixed = findElementByCssRule("position", null, e => e === "fixed" || e === "absolute", fixedElement);
+        if (childrenWithFixed.length > 1) return; // check if not the root element
 
         configs.cookieHtmlKeywords.forEach(cookieHtmlKeyword => {
             
@@ -187,8 +187,6 @@ function createObserver() {
 
             checkAfterModification = setTimeout(() => {
 
-                
-
                 startPopUpCleaner(checkElements);
                 checkElements = [];
 
@@ -227,6 +225,10 @@ try {
         setTimeout(() => {
             startPopUpCleaner();
         }, 100);
+
+        setTimeout(() => {
+            startPopUpCleaner();
+        }, 3000);
 
     }).catch(logger.error);
     
