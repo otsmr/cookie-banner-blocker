@@ -15,16 +15,26 @@ function removeClassNamesByKeywords () {
     
 }
 
+const VALID_CSS_NAME = /^[a-zA-Z_-][\w-]*$/;
+
+function isValidCssName (name) {
+    return VALID_CSS_NAME.test(name);
+}
+
 function getSelectorByIdentifier (elementToRemove) {
 
     let selector = `${elementToRemove.tagName}`;
     
-    if (elementToRemove.id !== "")
+    if (elementToRemove.id !== "" && isValidCssName(elementToRemove.id))
         selector += "#" + elementToRemove.id;
     
-    if (elementToRemove.className !== "")
-        // filtering is important if there are too many spaces in the className for some reason
-        selector += "." + elementToRemove.className.split(" ").filter(e => e !== "").join(".");
+    if (elementToRemove.className !== "") {
+        // filtering is important if there are too many spaces in the className for some reason,
+        // or class names are non conforming to CSS spec
+        let classNames = "." + elementToRemove.className.split(" ").filter(e => e !== "").join(".");
+        classNames = "." + classNames.split(".").filter(isValidCssName).join(".");
+        selector += classNames;
+    }
 
     if (elementToRemove.style !== undefined) {
         selector += "[style=\"" + elementToRemove.style + "\"]";
@@ -121,7 +131,7 @@ function injectBlockerRules (rules) {
 
     removeClassNamesByKeywords();
 
-    blockerStyleElement.innerHTML += rules;
+    blockerStyleElement.innerText += rules;
 
     logger.info("update injectBlockerRules ", rules.split("\n").join(" "));
 
