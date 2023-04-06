@@ -1,7 +1,9 @@
 # [Cookie Banner Blocker](https://addons.mozilla.org/de/firefox/addon/cookie-banner-blocker/)
 
 A cookie banner blocker that removes most cookie and newsletter pop-ups without a block list.   
-It also detects so-called "consent cookie banner pages" that redirect to a separate consent page before opening the actual page.  
+It also detects so-called "consent cookie banner pages" that redirect to a separate consent page before opening the actual page. 
+
+**I started the project out of frustation, because the cookie banners annoy me a lot. Since I use the addon in combination with uBlock Origin, I barely see cookie banners anymore, so the project is finished for me. You are welcome to develop the project further, by forking it.**
 
 [Firefox Addons](https://addons.mozilla.org/de/firefox/addon/cookie-banner-blocker/)
 
